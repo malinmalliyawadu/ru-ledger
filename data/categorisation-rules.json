@@ -1,0 +1,508 @@
+{
+  "version": 1,
+  "note": "Starter rule set for a salaried NZ employee. Patterns are case-insensitive regex matched against the raw transaction description, and array order is the evaluation order: first match wins. The merchant patterns cover the chains that show up on almost every NZ bank statement; the exclusions are deliberately conservative, because under-excluding shows up as a visible transfer you can fix while over-excluding silently hides real spending. Tune the exclusions against real statements once they are imported - see README, 'Tuning the rules'.",
+  "passthrough_in": [],
+  "passthrough_out": [],
+  "exclusions": [
+    "payment received",
+    "payment - thank you",
+    "payment thankyou",
+    "direct debit payment received",
+    "^cc payment",
+    "^credit card payment",
+    "^payment to card",
+    "^dd dishonour",
+    "^ap dishonour",
+    "^transfer from everyday"
+  ],
+  "unidentified": [
+    "^trf \\*+ ?\\d*",
+    "^trf \\d",
+    "^eftpos$"
+  ],
+  "categories": [
+    {
+      "priority": 1,
+      "category": "Rent",
+      "patterns": [
+        "\\brent\\b",
+        "property management",
+        "quinovic",
+        "oxygen property",
+        "tommy's property"
+      ]
+    },
+    {
+      "priority": 2,
+      "category": "Savings & investing",
+      "patterns": [
+        "sharesies",
+        "kernel wealth",
+        "hatch invest",
+        "invest ?now",
+        "simplicity nz",
+        "smartshares",
+        "squirrel",
+        "^save\\b",
+        "round ?up"
+      ]
+    },
+    {
+      "priority": 3,
+      "category": "Power, water & rates",
+      "patterns": [
+        "meridian energy",
+        "genesis energy",
+        "contact energy",
+        "mercury nz",
+        "electric kiwi",
+        "flick electric",
+        "frank energy",
+        "nova energy",
+        "city council",
+        "district council",
+        "watercare",
+        "tiaki wai"
+      ]
+    },
+    {
+      "priority": 4,
+      "category": "Insurance",
+      "patterns": [
+        "insurance",
+        "\\bami\\b",
+        "\\baa insur",
+        "tower limited",
+        "southern cross",
+        "nib nz",
+        "partners life",
+        "body corporate"
+      ]
+    },
+    {
+      "priority": 5,
+      "category": "Internet & mobile",
+      "patterns": [
+        "\\bspark nz\\b",
+        "spark prepaid",
+        "skinny",
+        "\\bone nz\\b",
+        "vodafone",
+        "2degrees",
+        "wireless nation",
+        "nownz",
+        "orcon",
+        "slingshot",
+        "airalo"
+      ]
+    },
+    {
+      "priority": 6,
+      "category": "Health & pharmacy",
+      "patterns": [
+        "chemis",
+        "pharmac",
+        "unichem",
+        "life pharmacy",
+        "bargain chemist",
+        "\\bdentist\\b",
+        "dental",
+        "physio",
+        "medical cent",
+        "healthcare",
+        "optomet",
+        "specsavers"
+      ]
+    },
+    {
+      "priority": 7,
+      "category": "Groceries",
+      "patterns": [
+        "new wor",
+        "newworld",
+        "woolworths",
+        "countdown",
+        "pak ?n ?save",
+        "paknsave",
+        "four ?square",
+        "foursquare",
+        "fresh choice",
+        "freshchoice",
+        "supervalue",
+        "moore wilsons",
+        "farro fresh",
+        "huckleberry",
+        "commonsense",
+        "goodfor"
+      ]
+    },
+    {
+      "priority": 8,
+      "category": "Coffee",
+      "patterns": [
+        "\\bcoffee\\b",
+        "espresso",
+        "starbucks",
+        "^mojo ",
+        "\\bcafe\\b",
+        "caffe",
+        "roastery",
+        "allpress"
+      ]
+    },
+    {
+      "priority": 9,
+      "category": "Eating out & takeaways",
+      "patterns": [
+        "uber\\s*\\*?\\s*eats",
+        "doordash",
+        "menulog",
+        "delivereasy",
+        "mcdonald",
+        "burger ?king",
+        "burgerfuel",
+        "burger fuel",
+        "\\bkfc\\b",
+        "k\\.f\\.c",
+        "nando",
+        "domino",
+        "pizza hut",
+        "pizza club",
+        "subway",
+        "sushi",
+        "\\bthai\\b",
+        "kebab",
+        "noodle",
+        "dumpling",
+        "ramen",
+        "bakery",
+        "restaurant",
+        "eatery",
+        "bistro",
+        "\\bkitchen\\b",
+        "gelato",
+        "ice cream",
+        "brewing",
+        "brewery",
+        "tavern"
+      ]
+    },
+    {
+      "priority": 10,
+      "category": "Fitness & wellbeing",
+      "patterns": [
+        "les mills",
+        "city ?fitness",
+        "anytime fitness",
+        "\\bjetts\\b",
+        "snap fitness",
+        "\\bpilates\\b",
+        "\\byoga\\b",
+        "\\bgym\\b",
+        "massage",
+        "physiothera"
+      ]
+    },
+    {
+      "priority": 11,
+      "category": "Beauty & hair",
+      "patterns": [
+        "mecca",
+        "sephora",
+        "\\blush\\b",
+        "\\bhair\\b",
+        "salon",
+        "barber",
+        "\\bnails\\b",
+        "beauty",
+        "\\bbrows\\b",
+        "\\blashes\\b",
+        "waxing",
+        "skin ?care",
+        "the body shop",
+        "priceline"
+      ]
+    },
+    {
+      "priority": 12,
+      "category": "Clothing",
+      "patterns": [
+        "glassons",
+        "cotton on",
+        "country road",
+        "witchery",
+        "seed heritage",
+        "kmart",
+        "\\bzara\\b",
+        "uniqlo",
+        "\\bh&m\\b",
+        "lululemon",
+        "hallenstein",
+        "^farmers",
+        "platypus",
+        "\\bshein\\b",
+        "kathmandu",
+        "icebreaker",
+        "rubi shoes",
+        "postie",
+        "decjuba"
+      ]
+    },
+    {
+      "priority": 13,
+      "category": "Subscriptions",
+      "patterns": [
+        "apple\\.com",
+        "google ?\\*?play",
+        "youtube",
+        "netflix",
+        "spotify",
+        "disney",
+        "\\bneon\\b",
+        "prime video",
+        "amazon prime",
+        "audible",
+        "canva",
+        "adobe",
+        "duolingo",
+        "\\bnotion\\b",
+        "dropbox",
+        "icloud",
+        "patreon",
+        "substack"
+      ]
+    },
+    {
+      "priority": 14,
+      "category": "Transport & fuel",
+      "patterns": [
+        "uber\\s*\\*?\\s*trip",
+        "zoomy",
+        "snapper",
+        "\\bat hop\\b",
+        "metlink",
+        "bee card",
+        "bp connect",
+        "bp 2go",
+        "\\bz energy\\b",
+        "\\bmobil\\b",
+        "\\bgull\\b",
+        "waitomo",
+        "\\bnpd\\b",
+        "caltex",
+        "nz transport agency",
+        "waka kotahi",
+        "paymypark",
+        "car ?park",
+        "wilson parking",
+        "\\bvtnz\\b",
+        "repco"
+      ]
+    },
+    {
+      "priority": 15,
+      "category": "Travel & holidays",
+      "patterns": [
+        "air new zealand",
+        "jetstar",
+        "\\bqantas\\b",
+        "airbnb",
+        "booking\\.com",
+        "agoda",
+        "expedia",
+        "\\bhotel\\b",
+        "motel",
+        "holiday park",
+        "interislander",
+        "bluebridge",
+        "\\bhertz\\b",
+        "\\bavis\\b",
+        "\\bjucy\\b",
+        "flight cent",
+        "house of travel",
+        "getyourguide",
+        "klook"
+      ]
+    },
+    {
+      "priority": 16,
+      "category": "Home & shopping",
+      "patterns": [
+        "bunnings",
+        "mitre 10",
+        "briscoes",
+        "the warehouse",
+        "thewarehouse",
+        "\\bikea\\b",
+        "freedom furniture",
+        "spotlight",
+        "mighty ?ape",
+        "jb ?hi",
+        "noel leeming",
+        "harvey norman",
+        "pb technolog",
+        "\\btemu\\b",
+        "trade ?me",
+        "whitcoulls",
+        "florist",
+        "garden cent"
+      ]
+    },
+    {
+      "priority": 17,
+      "category": "Pets",
+      "patterns": [
+        "\\bvet\\b",
+        "veterinar",
+        "animates",
+        "pet ?stock",
+        "petdirect",
+        "\\bspca\\b"
+      ]
+    },
+    {
+      "priority": 18,
+      "category": "Entertainment & events",
+      "patterns": [
+        "event cinema",
+        "\\bcinema\\b",
+        "reading cinema",
+        "\\bhoyts\\b",
+        "ticketmaster",
+        "ticketek",
+        "moshtix",
+        "eventfinda",
+        "\\bzoo\\b",
+        "\\bmuseum\\b",
+        "\\bgallery\\b",
+        "escape room",
+        "\\bbowling\\b",
+        "mini golf"
+      ]
+    },
+    {
+      "priority": 19,
+      "category": "Gifts & celebrations",
+      "patterns": [
+        "\\bgift\\b",
+        "\\bflowers\\b",
+        "jeweller",
+        "\\bwedding\\b",
+        "party ?warehouse"
+      ]
+    },
+    {
+      "priority": 20,
+      "category": "Donations & giving",
+      "patterns": [
+        "red ?cross",
+        "\\boxfam\\b",
+        "amnesty",
+        "cancer society",
+        "world vision",
+        "greenpeace",
+        "kidscan",
+        "everybody ?eats"
+      ]
+    },
+    {
+      "priority": 21,
+      "category": "Cash withdrawals",
+      "patterns": [
+        "atms? - nz",
+        "\\batm\\b",
+        "cash withdrawal"
+      ]
+    },
+    {
+      "priority": 22,
+      "category": "Family & personal transfers",
+      "patterns": [
+        "^wise ",
+        "wise auk",
+        "western union",
+        "remitly"
+      ]
+    },
+    {
+      "priority": 23,
+      "category": "Fees & interest",
+      "patterns": [
+        "annual card fee",
+        "account fee",
+        "monthly fee",
+        "international txn fee",
+        "overseas fee",
+        "currency conversion",
+        "dishonour",
+        "interest charge",
+        "\\binterest\\b"
+      ]
+    }
+  ],
+  "income": [
+    {
+      "priority": 1,
+      "category": "Salary",
+      "patterns": [
+        "\\bsalary\\b",
+        "\\bpayroll\\b",
+        "\\bwages\\b",
+        "\\bpay run\\b",
+        "\\bnet pay\\b"
+      ]
+    },
+    {
+      "priority": 2,
+      "category": "Tax refunds",
+      "patterns": [
+        "i\\.?r\\.?d\\b",
+        "inland revenue",
+        "tax refund"
+      ]
+    },
+    {
+      "priority": 3,
+      "category": "Reimbursements",
+      "patterns": [
+        "reimburse",
+        "expense claim"
+      ]
+    },
+    {
+      "priority": 4,
+      "category": "Interest earned",
+      "patterns": [
+        "credit interest",
+        "interest paid",
+        "bonus interest"
+      ]
+    },
+    {
+      "priority": 5,
+      "category": "Investment withdrawals",
+      "patterns": [
+        "sharesies",
+        "kernel wealth",
+        "hatch invest"
+      ]
+    }
+  ],
+  "merchant_aliases": [
+    { "pattern": "pak ?n ?save|paknsave", "display_name": "Pak'nSave" },
+    { "pattern": "new wor|newworld", "display_name": "New World" },
+    { "pattern": "woolworths|countdown", "display_name": "Woolworths" },
+    { "pattern": "uber\\s*\\*?\\s*eats", "display_name": "Uber Eats" },
+    { "pattern": "uber\\s*\\*?\\s*trip", "display_name": "Uber" },
+    { "pattern": "les mills", "display_name": "Les Mills" },
+    { "pattern": "city ?fitness", "display_name": "City Fitness" },
+    { "pattern": "apple\\.com", "display_name": "Apple" },
+    { "pattern": "google ?\\*?play", "display_name": "Google Play" },
+    { "pattern": "city council|district council", "display_name": "Council rates" }
+  ],
+  "non_consumption_categories": [
+    "Savings & investing",
+    "Family & personal transfers"
+  ],
+  "payg_merchants": []
+}

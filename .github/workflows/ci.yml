@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    # The reconciliation assertions run against a real database and are meant to
+    # break the build. They fail rather than skip when DATABASE_URL is missing,
+    # so CI has to provide one.
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ruledger
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/ruledger
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Apply migrations
+        run: npm run db:migrate
+
+      - name: Seed rules
+        run: npm run seed:rules
+
+      # Real transactions never reach CI, so the reconciliation and coverage
+      # assertions run against generated data of the same shape. The engine
+      # cannot tell the difference; it only sees descriptors and amounts.
+      - name: Seed demo data
+        run: npm run seed:demo
+
+      - name: Classify
+        run: npm run recompute
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      # The Dockerfile is deployment-critical and has broken three separate ways
+      # already, each time in a way nothing else caught.
+      - name: Build the production image
+        run: docker build -t ru-ledger:ci .

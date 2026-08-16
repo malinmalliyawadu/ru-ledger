@@ -1,0 +1,36 @@
+{
+  "name": "ru-ledger",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "db:migrate": "node --env-file-if-exists=.env scripts/migrate.ts",
+    "db:reset": "node --env-file-if-exists=.env scripts/migrate.ts --reset",
+    "seed:rules": "node --env-file-if-exists=.env scripts/seed-rules.ts",
+    "seed:demo": "node --env-file-if-exists=.env scripts/seed-demo.ts",
+    "import:csv": "node --env-file-if-exists=.env scripts/import-csv.ts",
+    "backfill": "node --env-file-if-exists=.env scripts/backfill.ts",
+    "sync": "node --env-file-if-exists=.env scripts/sync.ts",
+    "recompute": "node --env-file-if-exists=.env scripts/recompute.ts",
+    "test": "node --env-file-if-exists=.env --test \"tests/**/*.test.ts\""
+  },
+  "dependencies": {
+    "next": "^15.5.4",
+    "postgres": "^3.4.7",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "typescript": "^5.9.2"
+  }
+}

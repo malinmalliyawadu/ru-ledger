@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+build/
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets. .env.example is committed; nothing else is.
+.env
+.env.*
+!.env.example
+.vercel
+
+# Supabase CLI local state
+supabase/.branches
+supabase/.temp
