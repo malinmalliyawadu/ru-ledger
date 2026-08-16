@@ -216,6 +216,24 @@ Note that non-consumption sits in its own term rather than inside `spend`. It is
 neither excluded nor living costs, and giving it a name in the identity is what
 keeps it visible while out of the headline.
 
+The constraint above only makes the *stored* classification single-valued.
+Overrides are resolved at read time and live in a different table, so every term
+in the identity has to be computed from the resolved verdict — the `transactions`
+view — and never from `transactions_enriched`. Reading one term from each is how
+the identity broke once already: with the two agreeing on every row that had no
+override, a database seeded from the rules file reconciled perfectly while the
+real one, where the manual edits are, was out by five figures. A term keyed on
+`transactions_enriched` is not a slightly stale reading of the ledger. It counts
+every overridden transaction twice or not at all, and a seeded test database
+cannot see it.
+
+For the same reason `unclassified_signed` keys on *having neither a category nor
+an exclusion* rather than on `classified_by = 'unmatched'`. Force-including a
+transaction the rules had excluded clears the exclusion without supplying a
+category, so it is `classified_by = 'override'` and belongs to no other term.
+Keying on the resolved values is what makes the terms a partition rather than a
+near-complete cover.
+
 ### A credit card is counted on the card, never on the payment
 
 The card is a liability account, so the same money appears twice: once as each
