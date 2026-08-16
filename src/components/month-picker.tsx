@@ -37,11 +37,23 @@ export function MonthPicker({
   // scrollLeft is set directly rather than calling scrollIntoView, which also
   // scrolls every ancestor — including the page, which would land the reader
   // halfway down the dashboard before they had read the top of it.
+  //
+  // Run once on mount and again once the display face has loaded. Fraunces and
+  // Plus Jakarta Sans arrive after first paint, and every chip changes width
+  // when they do, so a position measured before then is measured against the
+  // fallback font and lands somewhere else entirely.
   useEffect(() => {
-    const container = strip.current
-    const chip = container?.querySelector<HTMLElement>('[aria-current="true"]')
-    if (!container || !chip) return
-    container.scrollLeft = chip.offsetLeft - (container.clientWidth - chip.offsetWidth) / 2
+    const centre = () => {
+      const container = strip.current
+      const chip = container?.querySelector<HTMLElement>('[aria-current="true"]')
+      if (!container || !chip || container.clientWidth === 0) return
+      container.scrollLeft = chip.offsetLeft - (container.clientWidth - chip.offsetWidth) / 2
+    }
+
+    const frame = requestAnimationFrame(centre)
+    document.fonts?.ready.then(centre).catch(() => {})
+
+    return () => cancelAnimationFrame(frame)
   }, [selected])
 
   return (

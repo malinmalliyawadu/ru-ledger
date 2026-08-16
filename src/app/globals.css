@@ -572,12 +572,19 @@ select {
   margin-top: 26px;
 }
 
+/* position: relative, and no overflow clipping. The today needle is a child of
+   the bar so that it is measured against the bar's height rather than the whole
+   block — on a phone the key below wraps onto three lines, and a needle sized
+   against the block ran straight down through them. It also has to be free to
+   overhang the bar by a few pixels at each end, and to hang its label above it,
+   which is why the segments carry their own rounding instead of the bar
+   clipping them into shape. */
 .track-bar {
+  position: relative;
   display: flex;
   gap: 3px;
   height: 62px;
   border-radius: var(--r);
-  overflow: hidden;
   background: color-mix(in srgb, var(--surface) 55%, transparent);
 }
 

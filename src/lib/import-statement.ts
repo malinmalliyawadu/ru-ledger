@@ -1,27 +1,24 @@
 /**
- * Importing a Latitude/Gem statement.
+ * Importing a statement CSV.
  *
- * Shared by the CLI and the upload form so there is one definition of the
- * natural key. If the two ever computed it differently, importing the same file
- * through the other route would duplicate a year of transactions.
+ * Shared by the CLI and the upload form so there is exactly one definition of
+ * the natural key. If the two ever computed it differently, importing the same
+ * file through the other route would duplicate a year of transactions.
  */
 
 import { createHash } from 'node:crypto'
 import type postgres from 'postgres'
 
-import { parseGemStatement } from './csv.ts'
+import { parseStatement } from './csv.ts'
 
-export const GEM_ACCOUNT = {
-  externalId: 'gem-flight-centre',
-  name: 'Flight Centre Mastercard',
-  institution: 'Latitude',
-  type: 'CREDITCARD',
-  // A file someone has to remember to export gets a month before it is called
-  // stale, where an Akahu account gets three days.
-  staleAfterDays: 35,
-}
+/**
+ * A file someone has to remember to export gets a month before it is called
+ * stale, where an Akahu account gets three days.
+ */
+const STALE_AFTER_DAYS = 35
 
 export type ImportResult = {
+  account: string
   rowsInFile: number
   inserted: number
   alreadyPresent: number
@@ -32,9 +29,30 @@ export type ImportResult = {
   credits: number
 }
 
+/**
+ * The account a statement lands in is named by whoever uploads it, rather than
+ * being guessed from the file.
+ *
+ * A CSV export carries no reliable account identity — some have a card number,
+ * most have nothing — so guessing would eventually merge two cards into one
+ * account, and there is no safe way back from that once the rows are keyed.
+ * Asking is one field, and it makes importing a second card free.
+ */
+export function accountIdFor(accountName: string): string {
+  const slug = accountName
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  if (slug === '') throw new Error('Give the account a name.')
+  return `csv-${slug}`
+}
+
 /** Parses and keys the rows without touching the database. */
-export function prepareGemStatement(text: string, filename: string) {
-  const rows = parseGemStatement(text)
+export function prepareStatement(text: string, filename: string, accountName: string) {
+  const externalAccountId = accountIdFor(accountName)
+  const rows = parseStatement(text)
   if (rows.length === 0) throw new Error('That file has no transactions in it.')
 
   // Identical lines can legitimately appear twice in one statement — two $3.69
@@ -49,7 +67,7 @@ export function prepareGemStatement(text: string, filename: string) {
     // Hashes the untouched line rather than the parsed fields, so changing how
     // descriptions are normalised later cannot silently duplicate history.
     const externalId = createHash('sha256')
-      .update(`csv|${GEM_ACCOUNT.externalId}|${row.rawLine}|${occurrence}`)
+      .update(`csv|${externalAccountId}|${row.rawLine}|${occurrence}`)
       .digest('hex')
       .slice(0, 40)
 
@@ -58,24 +76,24 @@ export function prepareGemStatement(text: string, filename: string) {
 
   const dates = keyed.map((row) => row.date).sort()
 
-  return { keyed, from: dates[0]!, to: dates.at(-1)! }
+  return { keyed, externalAccountId, from: dates[0]!, to: dates.at(-1)! }
 }
 
-export async function importGemStatement(
+export async function importStatementFile(
   sql: postgres.Sql,
-  input: { text: string; filename: string },
+  input: { text: string; filename: string; accountName: string },
 ): Promise<ImportResult> {
-  const { keyed, from, to } = prepareGemStatement(input.text, input.filename)
+  const name = input.accountName.trim()
+  const { keyed, externalAccountId, from, to } = prepareStatement(input.text, input.filename, name)
 
   return sql.begin(async (tx) => {
     const [account] = await tx<{ id: string }[]>`
-      insert into accounts (external_id, source, name, institution, type,
+      insert into accounts (external_id, source, name, type,
                             stale_after_days, first_connected_at)
-      values (${GEM_ACCOUNT.externalId}, 'csv', ${GEM_ACCOUNT.name}, ${GEM_ACCOUNT.institution},
-              ${GEM_ACCOUNT.type}, ${GEM_ACCOUNT.staleAfterDays}, now())
+      values (${externalAccountId}, 'csv', ${name}, 'CREDITCARD',
+              ${STALE_AFTER_DAYS}, now())
       on conflict (source, external_id) do update set
         name             = excluded.name,
-        institution      = excluded.institution,
         stale_after_days = excluded.stale_after_days
       returning id
     `
@@ -123,13 +141,14 @@ export async function importGemStatement(
         last_synced_at          = now(),
         oldest_transaction_date = least(coalesce(oldest_transaction_date, ${from}::date), ${from}::date),
         backfill_completed_at   = coalesce(backfill_completed_at, now()),
-        backfill_notes          = ${`manual CSV import; latest file ${input.filename}`}
+        backfill_notes          = ${`imported by hand; latest file ${input.filename}`}
       where id = ${accountId}
     `
 
     const inserted = Number(after!.n) - Number(before!.n)
 
     return {
+      account: name,
       rowsInFile: keyed.length,
       inserted,
       alreadyPresent: keyed.length - inserted,

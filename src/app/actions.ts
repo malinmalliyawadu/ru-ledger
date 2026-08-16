@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 
 import { suggestedAmount } from '../lib/budget.ts'
 import { db, syncDb } from '../lib/db.ts'
-import { importGemStatement } from '../lib/import-gem.ts'
+import { importStatementFile } from '../lib/import-statement.ts'
 import { getBudget, getPeriods } from '../lib/queries.ts'
 import { recompute } from '../lib/recompute.ts'
 import type { ExclusionReason } from '../lib/rules-file.ts'
@@ -65,6 +65,7 @@ export type ImportState =
   | {
       status: 'done'
       filename: string
+      account: string
       rowsInFile: number
       inserted: number
       alreadyPresent: number
@@ -75,31 +76,43 @@ export type ImportState =
     }
 
 /**
- * Imports an uploaded Latitude/Gem statement.
+ * Imports an uploaded statement CSV.
  *
  * Safe to run on the whole file every time: rows are keyed on a hash of the
  * original CSV line, so overlapping exports insert nothing. That matters
- * because the statement cannot be asked for "everything since last time" —
- * every export overlaps the previous one.
+ * because a statement cannot be asked for "everything since last time" — every
+ * export overlaps the previous one.
  */
 export async function importStatement(
   _previous: ImportState,
   formData: FormData,
 ): Promise<ImportState> {
   const file = formData.get('file')
+  const accountName = String(formData.get('accountName') ?? '').trim()
 
   if (!(file instanceof File) || file.size === 0) {
     return { status: 'error', message: 'Choose a CSV file to import.' }
   }
+  if (accountName === '') {
+    return { status: 'error', message: 'Name the account this statement belongs to.' }
+  }
   if (file.size > 8_000_000) {
-    return { status: 'error', message: 'That file is over 8MB, which is far larger than a statement export. Check it is the right file.' }
+    return {
+      status: 'error',
+      message:
+        'That file is over 8MB, which is far larger than a statement export. Check it is the right file.',
+    }
   }
 
   try {
     const text = await file.text()
     // Writes the ledger, so it uses the sync connection rather than the
     // read-mostly one the pages render through.
-    const result = await importGemStatement(syncDb, { text, filename: file.name })
+    const result = await importStatementFile(syncDb, {
+      text,
+      filename: file.name,
+      accountName,
+    })
 
     // Imported rows arrive unclassified, and an unclassified transaction is
     // missing from every total on the dashboard.
@@ -110,6 +123,7 @@ export async function importStatement(
     return {
       status: 'done',
       filename: file.name,
+      account: result.account,
       rowsInFile: result.rowsInFile,
       inserted: result.inserted,
       alreadyPresent: result.alreadyPresent,

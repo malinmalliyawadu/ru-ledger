@@ -65,10 +65,32 @@ export function CsvUpload() {
           <span>{filename ? 'Ready to import' : 'or choose a file'}</span>
         </label>
 
+        {/* The account is named rather than guessed. A CSV export carries no
+            reliable account identity — some have a card number, most have
+            nothing — so guessing would eventually merge two cards into one
+            account, and there is no way back once the rows are keyed. */}
+        <div className="field">
+          <label htmlFor="accountName">Account</label>
+          <input
+            id="accountName"
+            name="accountName"
+            required
+            autoComplete="off"
+            placeholder="e.g. Rabobank Saver"
+            style={{ width: 180 }}
+          />
+        </div>
+
         <button className="btn" type="submit" disabled={pending || !filename}>
           {pending ? 'Importing…' : 'Import statement'}
         </button>
       </div>
+
+      <p className="note" style={{ marginTop: 10 }}>
+        Use the same account name every time you import that card, or its history will split in
+        two. The file needs a date column, a description column, and either an amount column or a
+        debit and credit pair — whatever your bank happens to call them.
+      </p>
 
       {state.status === 'error' && (
         <div className="banner banner-error" role="alert" style={{ marginTop: 12 }}>
@@ -92,14 +114,14 @@ export function CsvUpload() {
           <div>
             <strong>
               {state.inserted === 0
-                ? 'Already up to date.'
-                : `Imported ${plural(state.inserted, 'transaction')}.`}
+                ? `${state.account} is already up to date.`
+                : `Imported ${plural(state.inserted, 'transaction')} into ${state.account}.`}
             </strong>{' '}
             {state.filename} held {plural(state.rowsInFile, 'row')} covering{' '}
             {fullDate(state.from)} to {fullDate(state.to)}
             {state.alreadyPresent > 0 && `, of which ${state.alreadyPresent} were already here`}.
-            Everything is reclassified: {(state.coverage * 100).toFixed(2)}% categorised
-            {state.unmatched > 0 && `, ${state.unmatched} still unmatched`}.
+            Everything has been sorted again: {(state.coverage * 100).toFixed(1)}% categorised
+            {state.unmatched > 0 && `, ${state.unmatched} still to sort`}.
           </div>
         </div>
       )}
