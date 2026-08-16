@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "note": "Starter rule set for a salaried NZ employee. Patterns are case-insensitive regex matched against the raw transaction description, and array order is the evaluation order: first match wins. The merchant patterns cover the chains that show up on almost every NZ bank statement; the exclusions are deliberately conservative, because under-excluding shows up as a visible transfer you can fix while over-excluding silently hides real spending. Tune the exclusions against real statements once they are imported - see README, 'Tuning the rules'.",
+  "version": 2,
+  "note": "Rule set for a salaried NZ employee, tuned against Ru's real ANZ statements (Aug 2025 - Jun 2026). Patterns are case-insensitive regex matched against the raw transaction description, and array order is the evaluation order: first match wins. Bank descriptors are truncated at a fixed width, so patterns are written against the truncated form where that is what actually lands - 'city counci', 'restaur', 'ice crea', '\\bcaf\\b'. The exclusions stay deliberately conservative, because under-excluding shows up as a visible transfer you can fix while over-excluding silently hides real spending. See README, 'Tuning the rules'.",
   "passthrough_in": [],
   "passthrough_out": [],
   "exclusions": [
@@ -59,8 +59,8 @@
         "flick electric",
         "frank energy",
         "nova energy",
-        "city council",
-        "district council",
+        "city counci",
+        "\\bdis(?:trict)? counci",
         "watercare",
         "tiaki wai"
       ]
@@ -110,8 +110,16 @@
         "physio",
         "medical cent",
         "healthcare",
+        "\\bdoctors?\\b",
         "optomet",
-        "specsavers"
+        "specsavers",
+        "eyecare",
+        "\\bopsm\\b",
+        "acupunctur",
+        "myprotein",
+        "\\biherb\\b",
+        "mycobio",
+        "nzendo"
       ]
     },
     {
@@ -129,11 +137,20 @@
         "fresh choice",
         "freshchoice",
         "supervalue",
+        "supermar",
+        "mini mart",
         "moore wilsons",
         "farro fresh",
         "huckleberry",
         "commonsense",
-        "goodfor"
+        "goodfor",
+        "c r foods",
+        "yogiji",
+        "potter brothers",
+        "windermere farm",
+        "catalyst fruit",
+        "lollies",
+        "whittaker"
       ]
     },
     {
@@ -145,6 +162,7 @@
         "starbucks",
         "^mojo ",
         "\\bcafe\\b",
+        "\\bcaf\\b",
         "caffe",
         "roastery",
         "allpress"
@@ -166,25 +184,54 @@
         "k\\.f\\.c",
         "nando",
         "domino",
-        "pizza hut",
-        "pizza club",
+        "\\bpizza\\b",
         "subway",
         "sushi",
+        "st pierre",
         "\\bthai\\b",
         "kebab",
         "noodle",
         "dumpling",
         "ramen",
         "bakery",
-        "restaurant",
+        "bagel",
+        "brezel",
+        "tartines",
+        "restaur",
         "eatery",
         "bistro",
         "\\bkitchen\\b",
+        "tea house",
         "gelato",
-        "ice cream",
+        "ice crea",
+        "duck island",
         "brewing",
         "brewery",
-        "tavern"
+        "brew union",
+        "tavern",
+        "parrotdog",
+        "krispy kreme",
+        "tsuru",
+        "saigon",
+        "penang",
+        "bikaner",
+        "namaste",
+        "formosa",
+        "king pow",
+        "kokodak",
+        "spice rack",
+        "pukupies",
+        "mrs brownie",
+        "little savanna",
+        "rosebowl",
+        "cutie pie",
+        "sixes & sevens",
+        "pirates of the gril",
+        "scorchorama",
+        "rex tremendous",
+        "freddie clere",
+        "daily dojo",
+        "^slice\\b"
       ]
     },
     {
@@ -198,7 +245,10 @@
         "snap fitness",
         "\\bpilates\\b",
         "\\byoga\\b",
+        "\\bzumba\\b",
         "\\bgym\\b",
+        "aquatic cent",
+        "ironman",
         "massage",
         "physiothera"
       ]
@@ -214,13 +264,15 @@
         "salon",
         "barber",
         "\\bnails\\b",
+        "nailuv",
         "beauty",
         "\\bbrows\\b",
         "\\blashes\\b",
         "waxing",
         "skin ?care",
         "the body shop",
-        "priceline"
+        "priceline",
+        "\\bvivo\\b"
       ]
     },
     {
@@ -245,7 +297,12 @@
         "icebreaker",
         "rubi shoes",
         "postie",
-        "decjuba"
+        "decjuba",
+        "adidas",
+        "\\brebel\\b",
+        "sports clearance",
+        "\\bboody\\b",
+        "kate ?spade"
       ]
     },
     {
@@ -264,6 +321,7 @@
         "audible",
         "canva",
         "adobe",
+        "microsoft",
         "duolingo",
         "\\bnotion\\b",
         "dropbox",
@@ -277,6 +335,7 @@
       "category": "Transport & fuel",
       "patterns": [
         "uber\\s*\\*?\\s*trip",
+        "portier",
         "zoomy",
         "snapper",
         "\\bat hop\\b",
@@ -285,18 +344,26 @@
         "bp connect",
         "bp 2go",
         "\\bz energy\\b",
+        "^z ",
         "\\bmobil\\b",
         "\\bgull\\b",
         "waitomo",
         "\\bnpd\\b",
         "caltex",
+        "^gas ",
+        "kiwi fuels",
         "nz transport agency",
         "waka kotahi",
+        "\\bnzaa\\b",
         "paymypark",
         "car ?park",
+        "\\bparking\\b",
         "wilson parking",
         "\\bvtnz\\b",
-        "repco"
+        "repco",
+        "automotive",
+        "marks motors",
+        "euro servicing"
       ]
     },
     {
@@ -308,10 +375,15 @@
         "\\bqantas\\b",
         "airbnb",
         "booking\\.com",
+        "kiwi\\.com",
+        "mytrip",
+        "super\\.com",
         "agoda",
         "expedia",
         "\\bhotel\\b",
         "motel",
+        "interconti",
+        "grand millennium",
         "holiday park",
         "interislander",
         "bluebridge",
@@ -321,7 +393,9 @@
         "flight cent",
         "house of travel",
         "getyourguide",
-        "klook"
+        "klook",
+        "duty free",
+        "wellington airport"
       ]
     },
     {
@@ -333,9 +407,11 @@
         "briscoes",
         "the warehouse",
         "thewarehouse",
+        "^wsl\\b",
         "\\bikea\\b",
         "freedom furniture",
         "spotlight",
+        "lincraft",
         "mighty ?ape",
         "jb ?hi",
         "noel leeming",
@@ -344,6 +420,12 @@
         "\\btemu\\b",
         "trade ?me",
         "whitcoulls",
+        "\\bbooks\\b",
+        "manchester house",
+        "bargain world",
+        "super store",
+        "hospice shop",
+        "\\bbcfnz\\b",
         "florist",
         "garden cent"
       ]
@@ -368,16 +450,23 @@
         "\\bcinema\\b",
         "reading cinema",
         "\\bhoyts\\b",
+        "silky otter",
         "ticketmaster",
         "ticketek",
         "moshtix",
         "eventfinda",
+        "^eb \\*",
         "\\bzoo\\b",
         "\\bmuseum\\b",
         "\\bgallery\\b",
+        "\\btheatre\\b",
+        "exhibit",
+        "cross hills",
         "escape room",
         "\\bbowling\\b",
-        "mini golf"
+        "bowl[ae]rama",
+        "mini golf",
+        "\\blotto\\b"
       ]
     },
     {
@@ -385,10 +474,13 @@
       "category": "Gifts & celebrations",
       "patterns": [
         "\\bgift\\b",
-        "\\bflowers\\b",
+        "\\bflowers?\\b",
         "jeweller",
         "\\bwedding\\b",
-        "party ?warehouse"
+        "party ?warehouse",
+        "iko iko",
+        "canopy voucher",
+        "cape to bluff"
       ]
     },
     {
@@ -399,10 +491,14 @@
         "\\boxfam\\b",
         "amnesty",
         "cancer society",
+        "bowel cancer",
         "world vision",
         "greenpeace",
         "kidscan",
-        "everybody ?eats"
+        "everybody ?eats",
+        "givealittle",
+        "\\bcorso\\b",
+        "\\bbaps\\b"
       ]
     },
     {
@@ -411,7 +507,8 @@
       "patterns": [
         "atms? - nz",
         "\\batm\\b",
-        "cash withdrawal"
+        "cash withdrawal",
+        "^anz s\\d[a-z]\\d{4}\\b"
       ]
     },
     {
@@ -421,7 +518,9 @@
         "^wise ",
         "wise auk",
         "western union",
-        "remitly"
+        "remitly",
+        "orbitremit",
+        "gm\\s+imt\\s+aud"
       ]
     },
     {
@@ -431,6 +530,8 @@
         "annual card fee",
         "account fee",
         "monthly fee",
+        "^bank charge",
+        "conv fee",
         "international txn fee",
         "overseas fee",
         "currency conversion",
@@ -466,7 +567,9 @@
       "category": "Reimbursements",
       "patterns": [
         "reimburse",
-        "expense claim"
+        "expense claim",
+        "cashback",
+        "reward credit"
       ]
     },
     {
@@ -493,12 +596,24 @@
     { "pattern": "new wor|newworld", "display_name": "New World" },
     { "pattern": "woolworths|countdown", "display_name": "Woolworths" },
     { "pattern": "uber\\s*\\*?\\s*eats", "display_name": "Uber Eats" },
-    { "pattern": "uber\\s*\\*?\\s*trip", "display_name": "Uber" },
+    { "pattern": "uber\\s*\\*?\\s*trip|portier", "display_name": "Uber" },
     { "pattern": "les mills", "display_name": "Les Mills" },
     { "pattern": "city ?fitness", "display_name": "City Fitness" },
     { "pattern": "apple\\.com", "display_name": "Apple" },
     { "pattern": "google ?\\*?play", "display_name": "Google Play" },
-    { "pattern": "city council|district council", "display_name": "Council rates" }
+    { "pattern": "city counci|\\bdis(?:trict)? counci", "display_name": "Council rates" },
+    { "pattern": "^anz s\\d[a-z]\\d{4}\\b", "display_name": "ANZ ATM" },
+    { "pattern": "^wsl\\b", "display_name": "Warehouse Stationery" },
+    { "pattern": "aquatic cent", "display_name": "Makino Aquatic Centre" },
+    { "pattern": "silky otter", "display_name": "Silky Otter" },
+    { "pattern": "\\bvivo\\b", "display_name": "Vivo Hair & Beauty" },
+    { "pattern": "hell pizza", "display_name": "Hell Pizza" },
+    { "pattern": "the verdict caf", "display_name": "The Verdict" },
+    { "pattern": "kiwi fuels", "display_name": "Kiwi Fuels" },
+    { "pattern": "euro servicing", "display_name": "Euro Servicing" },
+    { "pattern": "orbitremit", "display_name": "OrbitRemit" },
+    { "pattern": "gm\\s+imt\\s+aud", "display_name": "International transfer" },
+    { "pattern": "^z ", "display_name": "Z Energy" }
   ],
   "non_consumption_categories": [
     "Savings & investing",
