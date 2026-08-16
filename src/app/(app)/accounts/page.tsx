@@ -1,7 +1,10 @@
-import { CsvUpload } from '../../components/csv-upload.tsx'
-import { getAccounts, getRecentSyncs, getSettings } from '../../lib/queries.ts'
-import { fullDate, money, plural } from '../../lib/format.ts'
-import { setStatementStartDay } from '../actions.ts'
+import { CsvUpload } from '../../../components/csv-upload.tsx'
+import { Passkeys } from '../../../components/passkeys.tsx'
+import { isProtected } from '../../../lib/auth.ts'
+import { getAccounts, getRecentSyncs, getSettings } from '../../../lib/queries.ts'
+import { listPasskeys } from '../../../lib/webauthn.ts'
+import { fullDate, money, plural } from '../../../lib/format.ts'
+import { setStatementStartDay } from '../../actions.ts'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,10 +14,11 @@ const ordinal = (n: number) => {
 }
 
 export default async function AccountsPage() {
-  const [accounts, syncs, settings] = await Promise.all([
+  const [accounts, syncs, settings, passkeys] = await Promise.all([
     getAccounts(),
     getRecentSyncs(6),
     getSettings(),
+    listPasskeys(),
   ])
 
   const startDay = settings.statementStartDay
@@ -176,6 +180,21 @@ export default async function AccountsPage() {
             imported.
           </p>
         )}
+      </section>
+
+      <section className="card">
+        <div className="card-head">
+          <div>
+            <h2>Passkeys</h2>
+            <p>
+              A passkey signs you in with whatever already unlocks the device - Face ID, a
+              fingerprint, the laptop&rsquo;s screen lock. The password in <code>APP_PASSWORD</code>{' '}
+              never stops working, so losing a device locks nothing away.
+            </p>
+          </div>
+        </div>
+
+        <Passkeys passkeys={passkeys} protectedApp={isProtected()} />
       </section>
 
       <section className="card">

@@ -22,6 +22,8 @@
     "test": "node --env-file-if-exists=.env --test \"tests/**/*.test.ts\""
   },
   "dependencies": {
+    "@simplewebauthn/browser": "^13.3.0",
+    "@simplewebauthn/server": "^13.3.2",
     "next": "^15.5.4",
     "postgres": "^3.4.7",
     "react": "^19.1.1",

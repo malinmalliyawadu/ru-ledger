@@ -113,6 +113,38 @@ delete from transactions_raw where external_id like 'demo_%';
 the reconciliation assertions are meant to break CI, and a skipped test that
 should have failed is worse than no test.
 
+## Locking it
+
+Set `APP_PASSWORD` and the whole app is behind a sign-in. Leave it unset and the
+app is open, which is right on a laptop and wrong on the internet.
+
+```
+APP_PASSWORD=something long and boring
+```
+
+Middleware gates every route, so page loads, server actions and the payloads the
+router fetches on a click are all covered by the same check. Only `/login` and
+static assets are outside it.
+
+Once you are in, add a **passkey** per device from Accounts & setup, and signing
+in becomes Face ID or a fingerprint. The password stays as the fallback and the
+root of trust: registering a passkey requires already being signed in, and
+changing the password signs every device out.
+
+The session cookie holds no secret. It is an expiry and an HMAC of it, keyed by
+the password, so a copied cookie is a copied session rather than a copied
+password. Registered passkeys are stored as public keys only, which is why
+`passkeys` needs no more protection than any other table.
+
+Passkeys need a secure context, so they work over https or on localhost and
+nowhere else. On a LAN address over plain http the button will not appear and
+the password is the way in. `WEBAUTHN_RP_ID` is only needed when one deployment
+answers on several hostnames that should share passkeys; leave it empty and the
+host of the request is used.
+
+Sign-in attempts are rate limited to eight a minute per IP, in memory. That is
+sized for one household on one container, not for a fleet.
+
 ## Tuning the rules
 
 `data/categorisation-rules.json` is the source of truth. Edit it and re-run
@@ -157,7 +189,8 @@ npm run seed:rules && npm run backfill && npm run recompute
 ```
 
 **2. The app.** Dockerfile build, port 3000. Set `DATABASE_URL`,
-`AKAHU_USER_TOKEN` and `AKAHU_APP_ID_TOKEN`.
+`AKAHU_USER_TOKEN`, `AKAHU_APP_ID_TOKEN`, and `APP_PASSWORD` — without the last
+one the ledger is readable by anyone who finds the URL.
 
 Leave `PGSSLMODE` empty when Postgres shares a private network with the app. Set
 `require` only when the connection leaves the host.
@@ -212,12 +245,16 @@ data/categorisation-rules.json   the rule set, source of truth for the seed
 db/migrations/                   schema, checked in, applied in filename order
 scripts/seed-rules.ts            idempotent loader for categories/rules/aliases
 scripts/seed-demo.ts             synthetic transactions for development
+src/lib/auth.ts                  the password, and the signed tickets it keys
+src/lib/webauthn.ts              the passkey ceremonies and the credential table
+src/middleware.ts                the gate every request passes through
 src/lib/categorise.ts            the engine: rules in, verdict out. Pure.
 src/lib/recurring.ts             cadence detection from the gaps between charges
 src/lib/queries.ts               every SQL query the pages use, incl. getOutlook
 src/lib/budget.ts                budget verdicts: on track, ahead of pace, over
 src/components/safe-to-spend.tsx the headline and the month track
-src/app/                         the seven pages
+src/app/(app)/                   the seven pages, all behind the sign-in
+src/app/login/                   the only page a stranger can reach
 docs/schema.md                   the schema and why it is shaped that way
 ```
 
