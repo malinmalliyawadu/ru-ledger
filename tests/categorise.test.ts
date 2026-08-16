@@ -125,6 +125,13 @@ test('aliases resolve descriptor drift to one merchant', () => {
   assert.equal(classify('PAKNSAVE KILBIRNIE', -104).merchantDisplayName, "Pak'nSave")
   assert.equal(classify('WOOLWORTHS NZ 9032', -71).merchantDisplayName, 'Woolworths')
   assert.equal(classify('COUNTDOWN JOHNSONVILLE', -71).merchantDisplayName, 'Woolworths')
+
+  // The same shop written four ways across the statement. Without the alias
+  // these are four merchants in the recurring view and none of them recur.
+  assert.equal(classify('WSL PRINT PALMERSTON N', -1.5).merchantDisplayName, 'Warehouse Stationery')
+  assert.equal(classify('WSL TROY ST PRINTER/C', -1.05).merchantDisplayName, 'Warehouse Stationery')
+  assert.equal(classify('MAKINO AQUATIC CENTR', -2.5).merchantDisplayName, 'Makino Aquatic Centre')
+  assert.equal(classify('MAKINO AQUATIC CENTRE FEILDING NZ', -4.57).merchantDisplayName, 'Makino Aquatic Centre')
 })
 
 test('unmatched descriptors are reported, not silently bucketed', () => {
@@ -138,6 +145,40 @@ test('a descriptor carrying no information is named, not left unmatched', () => 
   // Explicitly excluded as "unidentified" so the still-to-sort count means "a
   // rule is missing" and nothing else.
   assert.equal(classify('TRF ***** 8812', -140).exclusionReason, 'unidentified')
+})
+
+test('patterns match the truncated descriptor, not the merchant name', () => {
+  // ANZ cuts the merchant field at a fixed width, so the word a pattern is
+  // reaching for is routinely missing its last letters. Every one of these was
+  // sitting in the still-to-sort pile against a rule that looked like it should
+  // already have caught it.
+  assert.equal(classify('WELLINGTON CITY COUNCI', -70).categoryId, 'Power, water & rates')
+  assert.equal(classify('AMAYJEN THE RESTAUR', -104.66).categoryId, 'Eating out & takeaways')
+  assert.equal(classify('DUCK ISLAND ICE CREA', -14).categoryId, 'Eating out & takeaways')
+  assert.equal(classify('THE VERDICT CAF', -25.63).categoryId, 'Coffee')
+})
+
+test('an ANZ branch ATM code is a cash withdrawal', () => {
+  // The descriptor names the branch, never the machine, so neither "ATM" nor
+  // "cash withdrawal" appears anywhere in it. The teller code is the only
+  // reliable tell.
+  assert.equal(classify('ANZ S3A1936 FEILDING BR', -40).categoryId, 'Cash withdrawals')
+  assert.equal(classify('ANZ S3B4389 MILSON', -40).merchantDisplayName, 'ANZ ATM')
+})
+
+test('the fee on an international transfer is a fee, not the transfer', () => {
+  // Both legs carry "GM IMT" and the fee arrives as its own row. Fees sit below
+  // personal transfers in the order, so the transfer pattern is pinned to the
+  // full "GM IMT AUD" — which the fee row does not have.
+  assert.equal(classify('RUTU PAREKH IM0005414681 GM IMT AUD', -1200).categoryId, 'Family & personal transfers')
+  assert.equal(classify('BANK CHARGE IM0005414681 GM IMT 001600', -5).categoryId, 'Fees & interest')
+})
+
+test('a card refund does not become income', () => {
+  // Reimbursements now matches "cashback" and "reward credit", both of which
+  // are inflow-only. A shop refund still has to fall through to its category.
+  assert.equal(classify('AUTOCASHBACKS REWARD CREDIT', 230.57).categoryId, 'Reimbursements')
+  assert.equal(classify('SP SPORTS CLEARANCE LA', 180).categoryId, 'Clothing')
 })
 
 test('descriptors clean up without inventing a merchant name', () => {

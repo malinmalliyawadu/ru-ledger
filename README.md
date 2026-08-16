@@ -125,20 +125,24 @@ seed leaves them alone.
 Array order is the evaluation order and is load-bearing: pharmacy is tested
 before groceries, coffee before eating out, exclusions before every category.
 
-**The starter set is deliberately conservative about exclusions.** Under-excluding
-shows up as a visible transfer sitting in the uncategorised pile, which takes one
-click to fix. Over-excluding silently hides real spending, which nothing surfaces.
-So the two things that cannot be guessed in advance are left out until real
-statements arrive:
+**Write the pattern against the truncated descriptor.** ANZ cuts the merchant
+field at a fixed width, so the word a rule is reaching for is routinely missing
+its last letters: the council arrives as `WELLINGTON CITY COUNCI`, the
+restaurant as `AMAYJEN THE RESTAUR`, the ice cream as `DUCK ISLAND ICE CREA`.
+A rule written against the real trading name looks correct and never fires.
 
-1. **Transfers between your own accounts.** Banks write these with the account
-   holder's own name or account number in the descriptor. There is one worked
-   example in `EXCLUSION_REASONS` (`^transfer from everyday`) to copy.
-2. **Your employer's payroll descriptor**, if it does not contain the word
-   salary, payroll, wages or net pay.
+**The rule set stays deliberately conservative about exclusions.**
+Under-excluding shows up as a visible transfer sitting in the uncategorised
+pile, which takes one click to fix. Over-excluding silently hides real spending,
+which nothing surfaces. The one thing still left out on purpose is **transfers
+between your own accounts** — banks write these with the account holder's own
+name or account number, so each has to be recognised rather than guessed. There
+is a worked example in `EXCLUSION_REASONS` (`^transfer from everyday`) to copy.
 
-The fastest way to find both: open **Everything → Still to sort** after the first
-backfill, and work down the list.
+The rest of the pile is one-off merchants and person-to-person payments, which
+are cheaper to fix with a manual override on the row than with a rule that will
+never match twice. Open **Everything → Still to sort** and work down the list;
+anything that appears three or more times is worth a pattern.
 
 ## Deploying
 
