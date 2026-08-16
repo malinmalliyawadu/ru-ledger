@@ -15,6 +15,7 @@ import {
   getTrend,
 } from '../../lib/queries.ts'
 import { money, moneyWhole, monthLabel, plural, shortDate } from '../../lib/format.ts'
+import { nzHour } from '../../lib/time.ts'
 
 export const dynamic = 'force-dynamic'
 
@@ -251,13 +252,7 @@ export default async function HomePage({
  * this is the time when the page was asked for rather than when it was built.
  */
 function greeting(): string {
-  const hour = Number(
-    new Intl.DateTimeFormat('en-NZ', {
-      hour: 'numeric',
-      hour12: false,
-      timeZone: 'Pacific/Auckland',
-    }).format(new Date()),
-  )
+  const hour = nzHour()
   if (hour < 12) return 'Good morning'
   if (hour < 18) return 'Good afternoon'
   return 'Good evening'

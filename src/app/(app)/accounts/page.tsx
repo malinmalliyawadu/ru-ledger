@@ -3,7 +3,7 @@ import { Passkeys } from '../../../components/passkeys.tsx'
 import { isProtected } from '../../../lib/auth.ts'
 import { getAccounts, getRecentSyncs, getSettings } from '../../../lib/queries.ts'
 import { listPasskeys } from '../../../lib/webauthn.ts'
-import { fullDate, money, plural } from '../../../lib/format.ts'
+import { dateTime, fullDate, money, plural } from '../../../lib/format.ts'
 import { setStatementStartDay } from '../../actions.ts'
 
 export const dynamic = 'force-dynamic'
@@ -233,7 +233,7 @@ export default async function AccountsPage() {
                 {syncs.map((run) => (
                   <tr key={run.startedAt}>
                     <td style={{ fontSize: 13 }}>
-                      {new Date(run.startedAt).toLocaleString('en-NZ')}
+                      {dateTime(run.startedAt)}
                     </td>
                     <td style={{ fontSize: 13, color: 'var(--ink-muted)' }}>{run.trigger}</td>
                     <td>

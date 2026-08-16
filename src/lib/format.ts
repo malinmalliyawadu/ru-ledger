@@ -1,3 +1,5 @@
+import { NZ_TIMEZONE, nzDate } from './time.ts'
+
 const NZD = new Intl.NumberFormat('en-NZ', {
   style: 'currency',
   currency: 'NZD',
@@ -26,9 +28,23 @@ export function percent(value: number, digits = 0): string {
   return `${value >= 0 ? '+' : ''}${(value * 100).toFixed(digits)}%`
 }
 
-const DAY_MONTH = new Intl.DateTimeFormat('en-NZ', { day: 'numeric', month: 'short' })
-const DAY_MONTH_YEAR = new Intl.DateTimeFormat('en-NZ', { day: 'numeric', month: 'short', year: 'numeric' })
-const MONTH_SHORT = new Intl.DateTimeFormat('en-NZ', { month: 'short' })
+/**
+ * Calendar dates below, instants at the bottom of the file, and the two are
+ * kept apart on purpose.
+ *
+ * A transaction date is a day with no time and no zone, carried as `YYYY-MM-DD`
+ * and pegged at UTC midnight when it has to be a Date. These formatters are
+ * therefore fixed to UTC - not as a timezone, but so the peg is read back at
+ * the same place it was set. Formatting one in a local zone is how a date
+ * silently becomes the day before on a machine behind UTC.
+ *
+ * A `timestamptz` is the other thing entirely: a real instant, which has to be
+ * told which day it was in New Zealand before it can be printed. That is what
+ * dateTime and instantDate are for.
+ */
+const DAY_MONTH = new Intl.DateTimeFormat('en-NZ', { day: 'numeric', month: 'short', timeZone: 'UTC' })
+const DAY_MONTH_YEAR = new Intl.DateTimeFormat('en-NZ', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' })
+const MONTH_SHORT = new Intl.DateTimeFormat('en-NZ', { month: 'short', timeZone: 'UTC' })
 
 export function toDate(value: Date | string): Date {
   return value instanceof Date ? value : new Date(`${value}T00:00:00Z`)
@@ -42,7 +58,7 @@ export function fullDate(value: Date | string): string {
   return DAY_MONTH_YEAR.format(toDate(value))
 }
 
-const MONTH_YEAR = new Intl.DateTimeFormat('en-NZ', { month: 'long', year: 'numeric' })
+const MONTH_YEAR = new Intl.DateTimeFormat('en-NZ', { month: 'long', year: 'numeric', timeZone: 'UTC' })
 
 /**
  * "August 2026" for an ordinary month, which is what every period is here.
@@ -73,4 +89,36 @@ export function isoDate(value: Date | string): string {
 
 export function plural(count: number, one: string, many = `${one}s`): string {
   return `${count} ${count === 1 ? one : many}`
+}
+
+// ---------------------------------------------------------------------------
+// Instants
+// ---------------------------------------------------------------------------
+
+const NZ_DATE_TIME = new Intl.DateTimeFormat('en-NZ', {
+  timeZone: NZ_TIMEZONE,
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+})
+
+/**
+ * A moment in time - when a sync ran, when a passkey was used - in New Zealand
+ * time, whatever the machine rendering it thinks the zone is.
+ *
+ * Naming the zone rather than leaving it to the runtime is what keeps the
+ * server and the browser agreeing. A component rendered on a UTC server and
+ * hydrated in a New Zealand browser otherwise produces two different strings
+ * for the same timestamp, which React reports as a hydration mismatch and the
+ * reader sees as a time that changes on its own a moment after the page loads.
+ */
+export function dateTime(value: Date | string): string {
+  return NZ_DATE_TIME.format(value instanceof Date ? value : new Date(value))
+}
+
+/** The day an instant fell on, here. For timestamps shown as dates alone. */
+export function instantDate(value: Date | string): string {
+  return fullDate(nzDate(value))
 }

@@ -20,6 +20,7 @@
 import { createAkahuClient } from '../src/lib/akahu.ts'
 import { connect } from '../src/lib/db.ts'
 import { countRevised, countTransactions, upsertAccount, writeTransactions } from '../src/lib/ingest.ts'
+import { nzDate } from '../src/lib/time.ts'
 
 const args = process.argv.slice(2)
 const dryRun = args.includes('--dry-run')
@@ -97,7 +98,11 @@ try {
       fetched += page.length
 
       for (const txn of page) {
-        const date = txn.date.slice(0, 10)
+        // The same conversion writeTransactions makes. Taking the UTC day here
+        // instead would report an oldest_transaction_date that no row in the
+        // ledger actually has, and the Accounts page would name a day the
+        // history does not start on.
+        const date = nzDate(txn.date)
         if (oldest === null || date < oldest) oldest = date
         if (newest === null || date > newest) newest = date
       }
