@@ -103,6 +103,93 @@ describe('reconciliation', () => {
     )
   })
 
+  /**
+   * The buckets must still partition the ledger once transactions have been
+   * recategorised by hand.
+   *
+   * The assertion above cannot see this. It reads whatever is in the database,
+   * and the database CI builds is seeded from the rules file with no overrides
+   * in it — so both halves of a view that disagreed about overrides read the
+   * same numbers and drift came out at zero. Prod, where the overrides live,
+   * was out by five figures the whole time.
+   *
+   * So this writes the overrides itself, one of every shape the UI can produce,
+   * and rolls them back. It is the only test here that does not trust the
+   * ambient data to contain the interesting case.
+   */
+  test('the buckets still add up once transactions are overridden', async () => {
+    const Rollback = Symbol('rollback')
+    const drift = await sql
+      .begin(async (tx) => {
+        const [category] = await tx<{ id: string }[]>`
+          select id from categories where kind = 'expense' and is_consumption limit 1
+        `
+        assert.ok(category, 'no consumption category to override into')
+
+        // Each shape below reaches a different branch of the override lateral in
+        // the transactions view. Cases 1, 3 and 4 used to be counted twice;
+        // case 2 used to be dropped entirely.
+        const shapes = [
+          // rules excluded it, overridden into a category
+          tx`insert into overrides (transaction_id, category_id)
+             select r.id, ${category.id} from transactions_raw r
+             join transactions_enriched e on e.transaction_id = r.id
+             where e.exclusion_reason is not null limit 3`,
+          // rules categorised it, overridden into an exclusion
+          tx`insert into overrides (transaction_id, exclusion_reason)
+             select r.id, 'internal_transfer' from transactions_raw r
+             join transactions_enriched e on e.transaction_id = r.id
+             where e.category_id is not null and e.exclusion_reason is null limit 3`,
+          // rules could not place it, overridden into a category
+          tx`insert into overrides (transaction_id, category_id)
+             select r.id, ${category.id} from transactions_raw r
+             join transactions_enriched e on e.transaction_id = r.id
+             where e.classified_by = 'unmatched' limit 3`,
+        ]
+
+        let written = 0
+        for (const shape of shapes) written += (await shape).count
+
+        // Force-inclusion is inserted last and skips anything already
+        // overridden, since overrides is keyed by transaction_id. It is the
+        // shape with no category and no exclusion, which is why the partition
+        // keys on the resolved values rather than on classified_by.
+        written += (
+          await tx`insert into overrides (transaction_id, force_included)
+                   select r.id, true from transactions_raw r
+                   join transactions_enriched e on e.transaction_id = r.id
+                   where e.exclusion_reason is not null and e.category_id is null
+                     and r.id not in (select transaction_id from overrides) limit 3`
+        ).count
+
+        assert.ok(written > 0, 'no transactions available to override; fixture proves nothing')
+
+        const [row] = await tx<Record<string, string>[]>`select * from reconciliation`
+        const out =
+          round2(
+            Number(row!.net_cash) -
+              (Number(row!.income_signed) +
+                Number(row!.spend_signed) +
+                Number(row!.non_consumption_signed) +
+                Number(row!.excluded_signed) +
+                Number(row!.unclassified_signed)),
+          ) + 0
+
+        throw Object.assign(new Error('rollback'), { [Rollback]: true, drift: out, written })
+      })
+      .catch((error: { [k: symbol]: boolean; drift: number; written: number }) => {
+        if (!error[Rollback]) throw error
+        return error
+      })
+
+    assert.equal(
+      drift.drift,
+      0,
+      `out by ${drift.drift} after ${drift.written} overrides: reconciliation is reading ` +
+        `transactions_enriched somewhere it should be reading the override-resolved view`,
+    )
+  })
+
   test('categorisation coverage stays above 99%', async () => {
     const total = Number(recon.raw_count)
     if (total === 0) return
