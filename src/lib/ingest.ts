@@ -10,6 +10,7 @@
 import type postgres from 'postgres'
 
 import type { AkahuAccount, AkahuTransaction } from './akahu.ts'
+import { nzDate } from './time.ts'
 
 export async function upsertAccount(sql: postgres.Sql, account: AkahuAccount): Promise<string> {
   const [row] = await sql<{ id: string }[]>`
@@ -37,6 +38,12 @@ export async function upsertAccount(sql: postgres.Sql, account: AkahuAccount): P
  * The `where` clause on the upsert is the important part. Without it every sync
  * would rewrite every overlapping row, stamping revised_at on transactions that
  * never changed and making genuine upstream corrections impossible to find.
+ *
+ * Akahu dates are instants in UTC, and the day they belong to is the day it was
+ * here when they happened. Taking the first ten characters of the timestamp
+ * asks UTC instead, which moves everything spent before 1pm local time back a
+ * day - and at the turn of a month, back into the previous month, where it is
+ * counted against a period that had already closed.
  */
 export async function writeTransactions(
   sql: postgres.Sql,
@@ -49,7 +56,7 @@ export async function writeTransactions(
     external_id: txn._id,
     source: 'akahu',
     account_id: accountId,
-    date: txn.date.slice(0, 10),
+    date: nzDate(txn.date),
     description: txn.description,
     amount: txn.amount,
     raw: txn,

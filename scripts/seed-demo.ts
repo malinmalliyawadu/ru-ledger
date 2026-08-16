@@ -25,6 +25,7 @@
  */
 
 import { connect } from '../src/lib/db.ts'
+import { nzToday } from '../src/lib/time.ts'
 
 // Deterministic PRNG. Re-running the seed produces the same ledger, so a UI
 // change can be compared against a stable baseline.
@@ -41,8 +42,10 @@ const DAY = 86_400_000
 const addDays = (d: Date, days: number) => new Date(d.getTime() + days * DAY)
 const iso = (d: Date) => d.toISOString().slice(0, 10)
 
-const now = new Date()
-const END = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()))
+// Today here, so the demo ledger runs up to the day the app thinks it is. Ending
+// on UTC's today would leave the current month a day short all morning, and the
+// dashboard opening on an empty month on the 1st.
+const END = new Date(`${nzToday()}T00:00:00Z`)
 // The first of the month, thirteen months back: twelve whole months of history
 // plus the one currently running.
 const START = new Date(Date.UTC(END.getUTCFullYear(), END.getUTCMonth() - 13, 1))

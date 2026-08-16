@@ -1,5 +1,7 @@
 import postgres from 'postgres'
 
+import { NZ_TIMEZONE } from './time.ts'
+
 /**
  * Postgres connections. Server-side only: nothing in this file may be imported
  * into a client component, and the browser never opens a database socket.
@@ -49,12 +51,31 @@ function sslFor(): postgres.Options<{}>['ssl'] {
   }
 }
 
+/**
+ * Every connection opens in New Zealand time.
+ *
+ * Postgres answers `current_date` and `now()` from the session timezone, which
+ * otherwise comes from the server and is UTC on essentially every container
+ * image. That is not a display detail: `current_date` picks which statement
+ * period is the current one, how many days a period is into itself, and how
+ * long an account has been silent. Left in UTC, all three are a day behind for
+ * the first twelve hours of every New Zealand day - so on the 1st of the month,
+ * until noon, the dashboard would open on last month.
+ *
+ * Sent as a startup parameter rather than a `set timezone` afterwards so that
+ * every connection in the pool is already correct on its first query, including
+ * ones opened later to meet demand.
+ *
+ * `date` columns are unaffected either way. They have no timezone to render in,
+ * which is exactly why transaction dates are stored as dates.
+ */
 function create(role: Role): postgres.Sql {
   return postgres(urlFor(role), {
     max: role === 'web' ? 10 : 4,
     idle_timeout: 20,
     ssl: sslFor(),
     transform: { undefined: null },
+    connection: { TimeZone: NZ_TIMEZONE },
   })
 }
 

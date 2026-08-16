@@ -337,6 +337,44 @@ Akahu's, preserved end to end and never flipped:
 Credit cards follow the same rule: a purchase is negative, a payment to the card
 is positive. Presentation is the UI's problem.
 
+## Time convention
+
+New Zealand time, everywhere, and never inferred from the environment. The zone
+is named once in `src/lib/time.ts` and everything else goes through it.
+
+The reason it has to be stated rather than assumed is that nothing this app runs
+on is in New Zealand by default. Containers are UTC, Postgres takes its session
+zone from the server, and the browser takes it from the device. New Zealand is
+UTC+12/+13, so a UTC clock is still on yesterday for the first half of every
+local day - long enough for a transaction at 00:30 to be filed under the day
+before, and on the 1st of a month, under the month before, where it is counted
+against a period that has already been read and reconciled.
+
+Two kinds of value, and the difference is the whole thing:
+
+- **Calendar dates** - `transactions.date`, `period_start`, `effective_from`.
+  A day, with no time and no zone. Carried as `YYYY-MM-DD` strings, stored in
+  `date` columns, and pegged at UTC midnight where a JavaScript `Date` is
+  unavoidable. The peg is not a timezone choice; it is a fixed point, and such
+  values are read back with UTC accessors and formatted with `timeZone: 'UTC'`
+  so the day survives the round trip.
+- **Instants** - every `timestamptz` column, and anything from `new Date()`. A
+  real point in time, which has to be told which day it was *here* before it can
+  be shown. `nzDate` does the conversion; `dateTime` does the display.
+
+The two places the conversion actually happens:
+
+- **Ingest.** Akahu sends instants. `writeTransactions` converts each one to the
+  New Zealand day it fell on before it becomes a `date`.
+- **The connection.** Every pool opens with `TimeZone=Pacific/Auckland` as a
+  startup parameter, so `current_date` and `now()` answer in local time. Three
+  things depend on it: which period is the current one, how far into itself a
+  period is, and how long an account has been silent.
+
+`settings.timezone` records the zone but does not choose it - the connection
+that would have to read the setting is the same connection whose zone is being
+set. It is there for the day this stops being a one-country app.
+
 ## Database roles
 
 The original design used Supabase Row Level Security. On self-hosted Postgres

@@ -2,6 +2,7 @@
 // nothing here may be pulled into a client bundle.
 import { db } from './db.ts'
 import type { ExclusionReason } from './rules-file.ts'
+import { NZ_TIMEZONE, nzToday } from './time.ts'
 
 const num = (value: unknown): number => Number(value ?? 0)
 
@@ -19,7 +20,7 @@ export async function getSettings(): Promise<Settings> {
   return {
     statementStartDay: row?.statement_start_day ?? 16,
     largePurchaseThreshold: num(row?.large_purchase_threshold ?? 500),
-    timezone: row?.timezone ?? 'Pacific/Auckland',
+    timezone: row?.timezone ?? NZ_TIMEZONE,
   }
 }
 
@@ -319,8 +320,11 @@ export async function getOutlook(
   const expectedIn = isCurrent ? Math.max(moneyIn, num(average?.average)) : moneyIn
   const incomeIsEstimated = expectedIn > moneyIn + 0.005
 
-  const today = new Date()
-  const todayIso = today.toISOString().slice(0, 10)
+  // Today here, not today in UTC. Every comparison below is against it: a bill
+  // due this morning is either still to come or already paid depending on which
+  // day this is, and on the last day of the month a UTC "today" leaves the
+  // month with a day still to run that has in fact already gone.
+  const todayIso = nzToday()
 
   // A series is "due" at its last charge plus its own interval. One that has
   // already been charged this month lands past the end of it and drops out,

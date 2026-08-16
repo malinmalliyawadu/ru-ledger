@@ -10,7 +10,7 @@ import {
   removePasskey,
 } from '../app/auth-actions.ts'
 import type { Passkey } from '../lib/webauthn.ts'
-import { fullDate } from '../lib/format.ts'
+import { instantDate } from '../lib/format.ts'
 
 /**
  * Registering and forgetting passkeys.
@@ -107,10 +107,10 @@ export function Passkeys({ passkeys, protectedApp }: { passkeys: Passkey[]; prot
                 <tr key={passkey.id}>
                   <td style={{ fontWeight: 600 }}>{passkey.label}</td>
                   <td style={{ fontSize: 13, color: 'var(--ink-muted)' }}>
-                    {fullDate(passkey.createdAt)}
+                    {instantDate(passkey.createdAt)}
                   </td>
                   <td style={{ fontSize: 13, color: 'var(--ink-muted)' }}>
-                    {passkey.lastUsedAt ? fullDate(passkey.lastUsedAt) : 'never'}
+                    {passkey.lastUsedAt ? instantDate(passkey.lastUsedAt) : 'never'}
                   </td>
                   <td>
                     {passkey.backedUp ? (

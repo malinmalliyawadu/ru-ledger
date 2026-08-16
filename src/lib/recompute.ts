@@ -14,6 +14,7 @@ import type postgres from 'postgres'
 import { categorise, compileAliases, compileRules } from './categorise.ts'
 import { detectRecurring } from './recurring.ts'
 import type { ExclusionReason, RuleDirection, RuleType } from './rules-file.ts'
+import { nzToday } from './time.ts'
 
 export type RecomputeResult = {
   transactions: number
@@ -85,7 +86,10 @@ export async function recompute(sql: postgres.Sql): Promise<RecomputeResult> {
 
   // Cadence is detected over real spending only. Excluded rows are the same
   // money seen twice, and counting them would invent a rhythm.
-  const asOf = txns.at(-1)?.date ?? new Date()
+  // Transaction dates are calendar days pegged at UTC midnight, so the fallback
+  // has to be pegged the same way rather than being the current instant, or a
+  // gap measured against it is out by the offset.
+  const asOf = txns.at(-1)?.date ?? new Date(`${nzToday()}T00:00:00Z`)
   const series = detectRecurring(
     verdicts
       .filter((v) => v.verdict.exclusionReason === null && v.amount < 0)
