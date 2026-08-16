@@ -1,11 +1,11 @@
 import Link from 'next/link'
 
-import { BudgetBars } from '../../components/budget-bars.tsx'
-import { BudgetEditor } from '../../components/budget-editor.tsx'
-import { MonthPicker } from '../../components/month-picker.tsx'
-import { suggestedAmount, verdictFor } from '../../lib/budget.ts'
-import { getBudget, getPeriods } from '../../lib/queries.ts'
-import { money, moneyWhole, monthLabel, plural } from '../../lib/format.ts'
+import { BudgetBars } from '../../../components/budget-bars.tsx'
+import { BudgetEditor } from '../../../components/budget-editor.tsx'
+import { MonthPicker } from '../../../components/month-picker.tsx'
+import { suggestedAmount, verdictFor } from '../../../lib/budget.ts'
+import { getBudget, getPeriods } from '../../../lib/queries.ts'
+import { money, moneyWhole, monthLabel, plural } from '../../../lib/format.ts'
 
 export const dynamic = 'force-dynamic'
 

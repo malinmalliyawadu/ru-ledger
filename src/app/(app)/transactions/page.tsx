@@ -1,7 +1,7 @@
-import { MonthPicker } from '../../components/month-picker.tsx'
-import { TransactionsTable } from '../../components/transactions-table.tsx'
-import { getCategories, getPeriods, getTransactions } from '../../lib/queries.ts'
-import { money, plural } from '../../lib/format.ts'
+import { MonthPicker } from '../../../components/month-picker.tsx'
+import { TransactionsTable } from '../../../components/transactions-table.tsx'
+import { getCategories, getPeriods, getTransactions } from '../../../lib/queries.ts'
+import { money, plural } from '../../../lib/format.ts'
 
 export const dynamic = 'force-dynamic'
 

@@ -1,10 +1,10 @@
 import Link from 'next/link'
 
-import { CategoryBars } from '../components/category-bars.tsx'
-import { MonthBreakdown } from '../components/month-breakdown.tsx'
-import { MonthPicker } from '../components/month-picker.tsx'
-import { SafeToSpend } from '../components/safe-to-spend.tsx'
-import { TrendChart } from '../components/trend-chart.tsx'
+import { CategoryBars } from '../../components/category-bars.tsx'
+import { MonthBreakdown } from '../../components/month-breakdown.tsx'
+import { MonthPicker } from '../../components/month-picker.tsx'
+import { SafeToSpend } from '../../components/safe-to-spend.tsx'
+import { TrendChart } from '../../components/trend-chart.tsx'
 import {
   getBreakdown,
   getCategoryTotals,
@@ -13,8 +13,8 @@ import {
   getPaceComparison,
   getPeriods,
   getTrend,
-} from '../lib/queries.ts'
-import { money, moneyWhole, monthLabel, plural, shortDate } from '../lib/format.ts'
+} from '../../lib/queries.ts'
+import { money, moneyWhole, monthLabel, plural, shortDate } from '../../lib/format.ts'
 
 export const dynamic = 'force-dynamic'
 

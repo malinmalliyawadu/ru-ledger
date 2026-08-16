@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import { signOut } from '../app/auth-actions.ts'
 import type { Health } from '../lib/queries.ts'
 import { moneyWhole } from '../lib/format.ts'
 
@@ -81,7 +82,7 @@ function isActive(pathname: string, href: string): boolean {
   return href === '/' ? pathname === '/' : pathname.startsWith(href)
 }
 
-export function Rail({ health }: { health: Health | null }) {
+export function Rail({ health, canSignOut }: { health: Health | null; canSignOut: boolean }) {
   const pathname = usePathname()
   const needsAttention = health ? Math.round(health.transactions * (1 - health.coverage)) : 0
 
@@ -131,7 +132,9 @@ export function Rail({ health }: { health: Health | null }) {
       </div>
 
       {/* The same two links, for the phone top bar, where the rail's list is
-          hidden and the tabs below have no room for them. */}
+          hidden and the tabs below have no room for them. Sign out joins them
+          there for the same reason: the foot it lives in on a laptop is one of
+          the things the phone layout hides. */}
       <div className="rail-quick">
         {SECONDARY.map((item) => (
           <Link
@@ -144,23 +147,45 @@ export function Rail({ health }: { health: Health | null }) {
             <Icon name={item.icon} />
           </Link>
         ))}
+
+        {canSignOut && (
+          <form action={signOut}>
+            <button type="submit" className="rail-quick-link" aria-label="Sign out">
+              <svg className="rail-icon" viewBox="0 0 24 24" aria-hidden>
+                <path d="M14.5 4.5h4a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5h-4M10 8l-4 4 4 4M6 12h9" />
+              </svg>
+            </button>
+          </form>
+        )}
       </div>
 
-      {health && (
+      {(health || canSignOut) && (
         <div className="rail-foot">
-          <div>
-            <strong>{health.transactions.toLocaleString('en-NZ')}</strong> transactions,{' '}
-            <strong>{(health.coverage * 100).toFixed(0)}%</strong> sorted
-          </div>
-          <div>
-            {health.drift === 0 ? (
-              <>Every dollar accounted for.</>
-            ) : (
-              <span style={{ color: 'var(--berry)' }}>
-                Out by <span className="num">{moneyWhole(health.drift)}</span>
-              </span>
-            )}
-          </div>
+          {health && (
+            <>
+              <div>
+                <strong>{health.transactions.toLocaleString('en-NZ')}</strong> transactions,{' '}
+                <strong>{(health.coverage * 100).toFixed(0)}%</strong> sorted
+              </div>
+              <div>
+                {health.drift === 0 ? (
+                  <>Every dollar accounted for.</>
+                ) : (
+                  <span style={{ color: 'var(--berry)' }}>
+                    Out by <span className="num">{moneyWhole(health.drift)}</span>
+                  </span>
+                )}
+              </div>
+            </>
+          )}
+
+          {canSignOut && (
+            <form action={signOut}>
+              <button type="submit" className="rail-signout">
+                Sign out
+              </button>
+            </form>
+          )}
         </div>
       )}
     </nav>

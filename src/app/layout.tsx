@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { DM_Mono, Fraunces, Plus_Jakarta_Sans } from 'next/font/google'
 
-import { Rail, TabBar } from '../components/nav.tsx'
-import { getHealth } from '../lib/queries.ts'
 import './globals.css'
 
 // Fraunces carries all of the personality and is spent only on headings and the
@@ -42,21 +40,18 @@ export const viewport: Viewport = {
   ],
 }
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  // The layout renders on every page, including before the database has ever
-  // been reachable. A failed health check must not be the thing that stops the
-  // app rendering the page that would explain why.
-  const health = await getHealth().catch(() => null)
-
+/**
+ * Fonts, colours, and the document - and deliberately nothing else.
+ *
+ * The navigation lives one level down in `(app)`, because the sign-in page is
+ * the one page a stranger can reach and the rail is a summary of the ledger:
+ * how many transactions there are, how much is unsorted, how far out of balance
+ * it is. None of that is anyone else's business.
+ */
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-NZ" className={`${display.variable} ${body.variable} ${mono.variable}`}>
-      <body>
-        <div className="shell">
-          <Rail health={health} />
-          <main className="main">{children}</main>
-        </div>
-        <TabBar />
-      </body>
+      <body>{children}</body>
     </html>
   )
 }

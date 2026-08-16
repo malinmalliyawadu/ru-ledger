@@ -1,7 +1,7 @@
 import Link from 'next/link'
 
-import { getRecurring } from '../../lib/queries.ts'
-import { fullDate, money, plural } from '../../lib/format.ts'
+import { getRecurring } from '../../../lib/queries.ts'
+import { fullDate, money, plural } from '../../../lib/format.ts'
 
 export const dynamic = 'force-dynamic'
 

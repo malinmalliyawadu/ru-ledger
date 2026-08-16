@@ -1,9 +1,9 @@
 import Link from 'next/link'
 
-import { CategoryBars } from '../../components/category-bars.tsx'
-import { MonthPicker } from '../../components/month-picker.tsx'
-import { getCategoryTotals, getPeriods } from '../../lib/queries.ts'
-import { money, monthLabel, plural } from '../../lib/format.ts'
+import { CategoryBars } from '../../../components/category-bars.tsx'
+import { MonthPicker } from '../../../components/month-picker.tsx'
+import { getCategoryTotals, getPeriods } from '../../../lib/queries.ts'
+import { money, monthLabel, plural } from '../../../lib/format.ts'
 
 export const dynamic = 'force-dynamic'
 

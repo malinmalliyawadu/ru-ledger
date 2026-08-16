@@ -324,6 +324,12 @@ select {
   background: var(--surface-sunk);
 }
 
+button.rail-quick-link {
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
 .rail-quick-link[aria-current='page'] {
   background: var(--bloom-soft);
   color: var(--bloom);
@@ -344,6 +350,22 @@ select {
 .rail-foot strong {
   font-weight: 600;
   color: var(--ink);
+}
+
+.rail-signout {
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color 160ms var(--ease);
+}
+
+.rail-signout:hover {
+  color: var(--bloom);
 }
 
 .main {
@@ -1609,6 +1631,103 @@ tbody tr:hover td {
   margin-left: auto;
   font-size: 13px;
   color: var(--ink-muted);
+}
+
+/* --------------------------------------------------------------- sign in -- */
+
+/* The one page a stranger sees, so it carries the whole brand on its own: no
+   rail, no tabs, just the mark on the sunrise gradient the hero uses. */
+.signin {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: var(--sunrise);
+}
+
+.signin-card {
+  width: min(400px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: clamp(24px, 5vw, 34px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lift);
+}
+
+.signin-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.signin-brand h1 {
+  font-size: 22px;
+}
+
+.signin-brand p {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.signin-passkey {
+  justify-content: center;
+  padding: 13px 18px;
+  font-size: 15px;
+}
+
+.signin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.signin-form .btn {
+  justify-content: center;
+  padding: 11px 18px;
+}
+
+.signin-field {
+  border-radius: var(--r);
+  padding: 10px 16px;
+}
+
+.signin-field input {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+}
+
+.signin-switch {
+  align-self: center;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: color 160ms var(--ease);
+}
+
+.signin-switch:hover {
+  color: var(--bloom);
+}
+
+.signin-error {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--berry);
+}
+
+.signin-foot {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-faint);
 }
 
 /* ------------------------------------------------------------- animation -- */
